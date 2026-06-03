@@ -181,6 +181,31 @@ describe("ProjectCopy", () => {
     }),
   )
 
+  it.live("refresh ignores stale git worktree registrations", () =>
+    Effect.gen(function* () {
+      const input = yield* setup()
+      const copy = yield* ProjectCopy.Service
+      const stale = abs(`${input.root.path}-copy-stale`)
+      const target = abs(`${input.root.path}-copy-after-stale`)
+      yield* Effect.addFinalizer(() =>
+        Effect.promise(() => fs.rm(target, { recursive: true, force: true })).pipe(Effect.ignore),
+      )
+      yield* Effect.promise(() => $`git worktree add --detach ${stale} HEAD`.cwd(input.root.path).quiet())
+      yield* Effect.promise(() => fs.rm(stale, { recursive: true, force: true }))
+      yield* Effect.promise(() => $`git worktree add --detach ${target} HEAD`.cwd(input.root.path).quiet())
+
+      yield* copy.refresh({ projectID: input.projectID })
+
+      const discovered = abs(yield* Effect.promise(() => fs.realpath(target)))
+      expect(yield* stored(input.projectID)).toEqual(
+        [
+          { directory: input.sourceDirectory, type: "main" as const },
+          { directory: discovered, type: "git_worktree" as const },
+        ].toSorted((a, b) => a.directory.localeCompare(b.directory)),
+      )
+    }),
+  )
+
   it.live("refresh with no roots is a no-op", () =>
     Effect.gen(function* () {
       const copy = yield* ProjectCopy.Service

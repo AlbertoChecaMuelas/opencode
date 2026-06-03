@@ -17,6 +17,7 @@ export type Event =
   | EventMessagePartRemoved
   | EventSessionNextAgentSwitched
   | EventSessionNextModelSwitched
+  | EventSessionNextMoved
   | EventSessionNextPrompted
   | EventSessionNextSynthetic
   | EventSessionNextShellStarted
@@ -131,6 +132,13 @@ export type InvalidRequestError = {
   message: string
   kind?: string
   field?: string
+}
+
+export type MoveSessionError = {
+  name: "MoveSessionError"
+  data: {
+    message: string
+  }
 }
 
 export type SnapshotFileDiff = {
@@ -807,6 +815,16 @@ export type GlobalEvent = {
             providerID: string
             variant?: string
           }
+        }
+      }
+    | {
+        id: string
+        type: "session.next.moved"
+        properties: {
+          timestamp: number
+          sessionID: string
+          location: LocationRef
+          subpath?: string
         }
       }
     | {
@@ -1492,6 +1510,7 @@ export type GlobalEvent = {
     | SyncEventMessagePartRemoved
     | SyncEventSessionNextAgentSwitched
     | SyncEventSessionNextModelSwitched
+    | SyncEventSessionNextMoved
     | SyncEventSessionNextPrompted
     | SyncEventSessionNextSynthetic
     | SyncEventSessionNextShellStarted
@@ -2683,6 +2702,10 @@ export type EventTuiSessionSelect2 = {
   }
 }
 
+export type MoveSessionDestination = {
+  directory: string
+}
+
 export type ModelV2Info = {
   id: string
   apiID: string
@@ -2779,6 +2802,11 @@ export type ModelV2Info = {
     input?: number
     output: number
   }
+}
+
+export type LocationRef = {
+  directory: string
+  workspaceID?: string
 }
 
 export type PromptSource = {
@@ -2995,6 +3023,20 @@ export type SyncEventSessionNextModelSwitched = {
       providerID: string
       variant?: string
     }
+  }
+}
+
+export type SyncEventSessionNextMoved = {
+  type: "sync"
+  name: "session.next.moved.1"
+  id: string
+  seq: number
+  aggregateID: "sessionID"
+  data: {
+    timestamp: number
+    sessionID: string
+    location: LocationRef
+    subpath?: string
   }
 }
 
@@ -3378,11 +3420,6 @@ export type ProjectDirectories = Array<string>
 
 export type ProjectCopyCopy = {
   directory: string
-}
-
-export type LocationRef = {
-  directory: string
-  workspaceID?: string
 }
 
 export type SessionV2Info = {
@@ -3934,6 +3971,17 @@ export type EventSessionNextModelSwitched = {
       providerID: string
       variant?: string
     }
+  }
+}
+
+export type EventSessionNextMoved = {
+  id: string
+  type: "session.next.moved"
+  properties: {
+    timestamp: number
+    sessionID: string
+    location: LocationRef
+    subpath?: string
   }
 }
 
@@ -4727,6 +4775,37 @@ export type AppLogResponses = {
 }
 
 export type AppLogResponse = AppLogResponses[keyof AppLogResponses]
+
+export type ExperimentalControlPlaneMoveSessionData = {
+  body?: {
+    sessionID: string
+    destination: MoveSessionDestination
+    moveChanges?: boolean
+  }
+  path?: never
+  query?: never
+  url: "/experimental/control-plane/move-session"
+}
+
+export type ExperimentalControlPlaneMoveSessionErrors = {
+  /**
+   * MoveSessionError | InvalidRequestError
+   */
+  400: MoveSessionError | InvalidRequestError
+}
+
+export type ExperimentalControlPlaneMoveSessionError =
+  ExperimentalControlPlaneMoveSessionErrors[keyof ExperimentalControlPlaneMoveSessionErrors]
+
+export type ExperimentalControlPlaneMoveSessionResponses = {
+  /**
+   * Session moved
+   */
+  204: void
+}
+
+export type ExperimentalControlPlaneMoveSessionResponse =
+  ExperimentalControlPlaneMoveSessionResponses[keyof ExperimentalControlPlaneMoveSessionResponses]
 
 export type GlobalHealthData = {
   body?: never

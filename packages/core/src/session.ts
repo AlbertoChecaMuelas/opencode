@@ -65,11 +65,6 @@ type CreateInput = {
   location: Location.Ref
 }
 
-type MoveInput = {
-  sessionID: SessionSchema.ID
-  location: Location.Ref
-}
-
 type CompactInput = {
   sessionID: SessionSchema.ID
   prompt?: Prompt
@@ -96,7 +91,6 @@ export type Error = NotFoundError | MessageDecodeError | OperationUnavailableErr
 export interface Interface {
   readonly list: (input?: ListInput) => Effect.Effect<SessionSchema.Info[]>
   readonly create: (input?: CreateInput) => Effect.Effect<SessionSchema.Info>
-  readonly move: (input: MoveInput) => Effect.Effect<void, NotFoundError>
   readonly get: (sessionID: SessionSchema.ID) => Effect.Effect<SessionSchema.Info, NotFoundError>
   readonly messages: (input: {
     sessionID: SessionSchema.ID
@@ -327,7 +321,6 @@ export const layer = Layer.effect(
         return yield* new OperationUnavailableError({ operation: "wait" })
       }),
       resume: Effect.fn("V2Session.resume")(function* () {}),
-      move: Effect.fn("V2Session.move")(function* () {}),
     })
 
     return result

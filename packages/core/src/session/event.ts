@@ -6,6 +6,8 @@ import { ToolOutput } from "../tool-output"
 import { V2Schema } from "../v2-schema"
 import { FileAttachment, Prompt } from "./prompt"
 import { SessionSchema } from "./schema"
+import { Location } from "../location"
+import { RelativePath } from "../schema"
 
 export { FileAttachment }
 
@@ -57,6 +59,17 @@ export const ModelSwitched = EventV2.define({
   },
 })
 export type ModelSwitched = typeof ModelSwitched.Type
+
+export const Moved = EventV2.define({
+  type: "session.next.moved",
+  ...options,
+  schema: {
+    ...Base,
+    location: Location.Ref,
+    subpath: RelativePath.pipe(Schema.optional),
+  },
+})
+export type Moved = typeof Moved.Type
 
 export const Prompted = EventV2.define({
   type: "session.next.prompted",
@@ -368,6 +381,7 @@ export const All = Schema.Union(
   [
     AgentSwitched,
     ModelSwitched,
+    Moved,
     Prompted,
     Synthetic,
     Shell.Started,

@@ -212,6 +212,66 @@
         ]
       }
     },
+    "/experimental/control-plane/move-session": {
+      "post": {
+        "tags": ["controlPlane"],
+        "operationId": "experimental.controlPlane.moveSession",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Session moved"
+          },
+          "400": {
+            "description": "MoveSessionError | InvalidRequestError",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/MoveSessionError"
+                    },
+                    {
+                      "$ref": "#/components/schemas/InvalidRequestError"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "description": "Move a session to another project directory, optionally transferring local changes.",
+        "summary": "Move session",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sessionID": {
+                    "type": "string",
+                    "pattern": "^ses"
+                  },
+                  "destination": {
+                    "$ref": "#/components/schemas/MoveSessionDestination"
+                  },
+                  "moveChanges": {
+                    "type": "boolean"
+                  }
+                },
+                "required": ["sessionID", "destination"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "js",
+            "source": "import { createOpencodeClient } from \"@opencode-ai/sdk\n\nconst client = createOpencodeClient()\nawait client.experimental.controlPlane.moveSession({\n  ...\n})"
+          }
+        ]
+      }
+    },
     "/global/health": {
       "get": {
         "tags": ["global"],
@@ -11325,6 +11385,9 @@
             "$ref": "#/components/schemas/EventSessionNextModelSwitched"
           },
           {
+            "$ref": "#/components/schemas/EventSessionNextMoved"
+          },
+          {
             "$ref": "#/components/schemas/EventSessionNextPrompted"
           },
           {
@@ -11672,6 +11735,27 @@
           }
         },
         "required": ["_tag", "message"],
+        "additionalProperties": false
+      },
+      "MoveSessionError": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": ["MoveSessionError"]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": ["message"],
+            "additionalProperties": false
+          }
+        },
+        "required": ["name", "data"],
         "additionalProperties": false
       },
       "SnapshotFileDiff": {
@@ -13712,6 +13796,40 @@
                       }
                     },
                     "required": ["timestamp", "sessionID", "model"],
+                    "additionalProperties": false
+                  }
+                },
+                "required": ["id", "type", "properties"],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["session.next.moved"]
+                  },
+                  "properties": {
+                    "type": "object",
+                    "properties": {
+                      "timestamp": {
+                        "type": "number"
+                      },
+                      "sessionID": {
+                        "type": "string",
+                        "pattern": "^ses"
+                      },
+                      "location": {
+                        "$ref": "#/components/schemas/LocationRef"
+                      },
+                      "subpath": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["timestamp", "sessionID", "location"],
                     "additionalProperties": false
                   }
                 },
@@ -15969,6 +16087,9 @@
               },
               {
                 "$ref": "#/components/schemas/SyncEventSessionNextModelSwitched"
+              },
+              {
+                "$ref": "#/components/schemas/SyncEventSessionNextMoved"
               },
               {
                 "$ref": "#/components/schemas/SyncEventSessionNextPrompted"
@@ -19294,6 +19415,16 @@
         "required": ["id", "type", "properties"],
         "additionalProperties": false
       },
+      "MoveSessionDestination": {
+        "type": "object",
+        "properties": {
+          "directory": {
+            "type": "string"
+          }
+        },
+        "required": ["directory"],
+        "additionalProperties": false
+      },
       "ModelV2Info": {
         "type": "object",
         "properties": {
@@ -19616,6 +19747,19 @@
           "enabled",
           "limit"
         ],
+        "additionalProperties": false
+      },
+      "LocationRef": {
+        "type": "object",
+        "properties": {
+          "directory": {
+            "type": "string"
+          },
+          "workspaceID": {
+            "type": "string"
+          }
+        },
+        "required": ["directory"],
         "additionalProperties": false
       },
       "PromptSource": {
@@ -20271,6 +20415,51 @@
               }
             },
             "required": ["timestamp", "sessionID", "model"],
+            "additionalProperties": false
+          }
+        },
+        "required": ["type", "name", "id", "seq", "aggregateID", "data"],
+        "additionalProperties": false
+      },
+      "SyncEventSessionNextMoved": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["sync"]
+          },
+          "name": {
+            "type": "string",
+            "enum": ["session.next.moved.1"]
+          },
+          "id": {
+            "type": "string"
+          },
+          "seq": {
+            "type": "number"
+          },
+          "aggregateID": {
+            "type": "string",
+            "enum": ["sessionID"]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "timestamp": {
+                "type": "number"
+              },
+              "sessionID": {
+                "type": "string",
+                "pattern": "^ses"
+              },
+              "location": {
+                "$ref": "#/components/schemas/LocationRef"
+              },
+              "subpath": {
+                "type": "string"
+              }
+            },
+            "required": ["timestamp", "sessionID", "location"],
             "additionalProperties": false
           }
         },
@@ -21475,19 +21664,6 @@
         "type": "object",
         "properties": {
           "directory": {
-            "type": "string"
-          }
-        },
-        "required": ["directory"],
-        "additionalProperties": false
-      },
-      "LocationRef": {
-        "type": "object",
-        "properties": {
-          "directory": {
-            "type": "string"
-          },
-          "workspaceID": {
             "type": "string"
           }
         },
@@ -23146,6 +23322,40 @@
               }
             },
             "required": ["timestamp", "sessionID", "model"],
+            "additionalProperties": false
+          }
+        },
+        "required": ["id", "type", "properties"],
+        "additionalProperties": false
+      },
+      "EventSessionNextMoved": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["session.next.moved"]
+          },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "timestamp": {
+                "type": "number"
+              },
+              "sessionID": {
+                "type": "string",
+                "pattern": "^ses"
+              },
+              "location": {
+                "$ref": "#/components/schemas/LocationRef"
+              },
+              "subpath": {
+                "type": "string"
+              }
+            },
+            "required": ["timestamp", "sessionID", "location"],
             "additionalProperties": false
           }
         },
@@ -25270,6 +25480,10 @@
     {
       "name": "control",
       "description": "Control plane routes."
+    },
+    {
+      "name": "controlPlane",
+      "description": "Control-plane orchestration routes."
     },
     {
       "name": "global",
