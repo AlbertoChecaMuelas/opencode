@@ -295,7 +295,6 @@ function ConnectionGate(props: ParentProps<{ disableHealthCheck?: boolean }>) {
       when={!checking()}
       fallback={
         <div class="h-dvh w-screen flex flex-col items-center justify-center bg-background-base">
-          <></>
         </div>
       }
     >
