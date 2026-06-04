@@ -115,7 +115,7 @@ function getConfig() {
       return {
         ...base,
         appId,
-        productName: "OpenCode Dev",
+        productName: "Atenea Desktop",
         rpm: { packageName: "opencode-dev" },
       }
     }
