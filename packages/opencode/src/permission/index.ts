@@ -212,6 +212,36 @@ export function merge(...rulesets: PermissionV1.Ruleset[]): PermissionV1.Rule[] 
   return rulesets.flat()
 }
 
+/**
+ * Resolves the effective ruleset by merging all provided layers in precedence order.
+ * Layers are applied lowest-priority first; later layers override earlier ones via
+ * last-match-wins semantics (same as `evaluate`).
+ *
+ * Precedence (lowest → highest):
+ *   builtinDefaults < global < parentAgent < parentSession < session < subagent
+ *
+ * Any layer may be omitted (undefined) — it is silently skipped.
+ */
+export function resolveEffective(layers: {
+  builtinDefaults?: PermissionV1.Ruleset
+  global?: PermissionV1.Ruleset
+  parentAgent?: PermissionV1.Ruleset
+  parentSession?: PermissionV1.Ruleset
+  session?: PermissionV1.Ruleset
+  subagent?: PermissionV1.Ruleset
+}): PermissionV1.Rule[] {
+  return merge(
+    ...[
+      layers.builtinDefaults,
+      layers.global,
+      layers.parentAgent,
+      layers.parentSession,
+      layers.session,
+      layers.subagent,
+    ].filter((r): r is PermissionV1.Ruleset => r !== undefined),
+  )
+}
+
 export function disabled(tools: string[], ruleset: PermissionV1.Ruleset): Set<string> {
   const edits = ["edit", "write", "apply_patch"]
   return new Set(
