@@ -1,0 +1,9 @@
+- generic [ref=e2]:
+  - generic [ref=e3]: ACTUAL
+  - generic [ref=e4]:
+    - generic [ref=e5]: ATENEA
+    - generic [ref=e6]: Ask anything, / for commands, @ for context...
+  - generic [ref=e7]: "PROPUESTA: font-black + clamp(4rem,14vw,12rem) + mb-16"
+  - generic [ref=e8]:
+    - generic [ref=e9]: ATENEA
+    - generic [ref=e10]: Ask anything, / for commands, @ for context...
