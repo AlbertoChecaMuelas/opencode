@@ -264,8 +264,12 @@ function HomeDesign() {
 
   function openNewSession() {
     const conn = focusedServer()
+    if (!conn) return
     const project = newSessionProject()
-    if (!conn || !project) return
+    if (!project) {
+      void chooseProject(conn)
+      return
+    }
     openProjectNewSession(conn, project.worktree)
   }
 
