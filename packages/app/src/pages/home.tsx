@@ -321,7 +321,9 @@ function HomeDesign() {
 
   function chooseProject(conn: ServerConnection.Any) {
     function resolve(result: string | string[] | null) {
-      addProjects(conn, homeProjectDirectories(result))
+      const directories = homeProjectDirectories(result)
+      addProjects(conn, directories)
+      if (directories[0]) openProjectNewSession(conn, directories[0])
     }
 
     const server = global.createServerCtx(conn)
