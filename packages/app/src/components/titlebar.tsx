@@ -523,16 +523,31 @@ export function Titlebar(props: { update?: TitlebarUpdate }) {
                   </div>
                 </div>
                 <Show when={!(creating() && params.dir)}>
-                  <IconButtonV2
-                    type="button"
-                    variant="ghost-muted"
-                    size="large"
-                    class="shrink-0"
-                    icon={<IconV2 name="plus" />}
-                    as="a"
-                    href={newSessionHref()}
-                    aria-label={language.t("command.session.new")}
-                  />
+                  <Show
+                    when={params.dir || layout.projects.list().length > 0}
+                    fallback={
+                      <IconButtonV2
+                        type="button"
+                        variant="ghost-muted"
+                        size="large"
+                        class="shrink-0"
+                        icon={<IconV2 name="plus" />}
+                        onClick={() => command.trigger("project.open")}
+                        aria-label={language.t("command.session.new")}
+                      />
+                    }
+                  >
+                    <IconButtonV2
+                      type="button"
+                      variant="ghost-muted"
+                      size="large"
+                      class="shrink-0"
+                      icon={<IconV2 name="plus" />}
+                      as="a"
+                      href={newSessionHref()}
+                      aria-label={language.t("command.session.new")}
+                    />
+                  </Show>
                 </Show>
                 <div class="flex-1" />
                 <TitlebarV2Right state={v2RightState()} />

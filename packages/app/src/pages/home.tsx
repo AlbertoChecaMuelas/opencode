@@ -221,6 +221,12 @@ function HomeDesign() {
       hidden: true,
       onSelect: () => focusSessionSearch?.(),
     },
+    {
+      id: "session.new",
+      title: language.t("command.session.new"),
+      keybind: "mod+shift+s",
+      onSelect: () => openNewSession(),
+    },
   ])
 
   createEffect(() => {
